@@ -35,8 +35,7 @@ It returns a Geometry:
 Installation
 ------------
 
-bin/plugin --install envelope_aggregation --url "https://github.com/opendatasoft/elasticsearch-aggregation-envelope/raw/master/dist/elasticsearch-envelope-aggregation-1.0.0.zip"
-
+`bin/plugin --install envelope_aggregation --url "https://github.com/opendatasoft/elasticsearch-aggregation-envelope/raw/master/dist/elasticsearch-envelope-aggregation-1.0.0.zip"`
 
 License
 -------
