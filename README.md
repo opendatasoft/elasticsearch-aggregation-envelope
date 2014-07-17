@@ -28,10 +28,42 @@ Usage
 `field` must be of type geo_point.
 
 It returns a Geometry:
-    - Point if the bucket contains only one unique point
-    - LineString if the bucket contains two unique points
-    - Polygon if the bucket contains more than three unique points
 
+- Point if the bucket contains only one unique point
+- LineString if the bucket contains two unique points
+- Polygon if the bucket contains more than three unique points
+
+For example :
+
+```json
+{
+  "type": "Polygon",
+  "coordinates": [
+         [
+            [
+               2.3561,
+               48.8322
+            ],
+            [
+               2.33,
+               48.8493
+            ],
+            [
+               2.3333,
+               48.8667
+            ],
+            [
+               2.3615,
+               48.8637
+            ],
+            [
+               2.3561,
+               48.8322
+            ]
+         ]
+    ]
+}
+```
 Installation
 ------------
 
