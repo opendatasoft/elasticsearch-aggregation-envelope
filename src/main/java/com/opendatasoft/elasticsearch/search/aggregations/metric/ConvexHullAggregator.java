@@ -1,9 +1,7 @@
-package org.elasticsearch.search.aggregations.metric;
+package com.opendatasoft.elasticsearch.search.aggregations.metric;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LinearRing;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;

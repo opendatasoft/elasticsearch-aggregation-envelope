@@ -1,4 +1,4 @@
-package org.elasticsearch.search.aggregations.metric;
+package com.opendatasoft.elasticsearch.search.aggregations.metric;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.search.aggregations.Aggregator;

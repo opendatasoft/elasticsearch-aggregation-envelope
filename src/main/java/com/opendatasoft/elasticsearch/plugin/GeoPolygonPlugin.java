@@ -1,9 +1,9 @@
-package org.elasticsearch.plugin;
+package com.opendatasoft.elasticsearch.plugin;
 
+import com.opendatasoft.elasticsearch.search.aggregations.metric.ConvexHullParser;
 import org.elasticsearch.plugins.AbstractPlugin;
 import org.elasticsearch.search.aggregations.AggregationModule;
-import org.elasticsearch.search.aggregations.metric.ConvexHullParser;
-import org.elasticsearch.search.aggregations.metric.InternalConvexHull;
+import com.opendatasoft.elasticsearch.search.aggregations.metric.InternalConvexHull;
 
 public class GeoPolygonPlugin extends AbstractPlugin{
 

@@ -1,4 +1,4 @@
-package org.elasticsearch.search.aggregations.metric;
+package com.opendatasoft.elasticsearch.search.aggregations.metric;
 
 import com.spatial4j.core.shape.Shape;
 import com.vividsolutions.jts.geom.Coordinate;
