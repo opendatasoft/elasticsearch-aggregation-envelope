@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class ConvexHullAggregator extends MetricsAggregator.SingleValue {
+public final class ConvexHullAggregator extends MetricsAggregator {
 
     private final ValuesSource.GeoPoint valuesSource;
     private GeoPointValues values;
@@ -33,10 +33,6 @@ public final class ConvexHullAggregator extends MetricsAggregator.SingleValue {
         geoPoints = bigArrays.newObjectArray(estimatedBucketsCount);
     }
 
-    @Override
-    public double metric(long owningBucketOrd) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public boolean shouldCollect() {

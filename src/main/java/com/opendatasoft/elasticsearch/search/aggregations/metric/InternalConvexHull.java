@@ -14,13 +14,12 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilderString;
 import org.elasticsearch.search.aggregations.AggregationStreams;
 import org.elasticsearch.search.aggregations.InternalAggregation;
-import org.elasticsearch.search.aggregations.metrics.MetricsAggregation;
-import org.elasticsearch.search.aggregations.support.format.ValueFormatterStreams;
+import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
 
 import java.io.IOException;
 import java.util.*;
 
-public class InternalConvexHull extends MetricsAggregation implements ConvexHull {
+public class InternalConvexHull extends InternalMetricsAggregation implements ConvexHull {
 
     public final static Type TYPE = new Type("envelope");
 
@@ -193,7 +192,6 @@ public class InternalConvexHull extends MetricsAggregation implements ConvexHull
     @Override
     public void readFrom(StreamInput in) throws IOException {
         name = in.readString();
-        valueFormatter = ValueFormatterStreams.readOptional(in);
         int coordsSize = in.readInt();
         Coordinate[] coords = new Coordinate[coordsSize];
         for (int i=0; i < coordsSize; i++) {
@@ -205,7 +203,6 @@ public class InternalConvexHull extends MetricsAggregation implements ConvexHull
     @Override
     public void writeTo(StreamOutput out) throws IOException {
         out.writeString(name);
-        ValueFormatterStreams.writeOptional(valueFormatter, out);
         out.writeInt(convexHull.getCoordinates().length);
         for (Coordinate coord: convexHull.getCoordinates()) {
             out.writeDouble(coord.x);
