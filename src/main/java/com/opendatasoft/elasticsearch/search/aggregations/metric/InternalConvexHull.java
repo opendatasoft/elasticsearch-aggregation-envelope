@@ -171,7 +171,7 @@ public class InternalConvexHull extends InternalMetricsAggregation implements Co
     }
 
     @Override
-    public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
+    public XContentBuilder doXContentBody(XContentBuilder builder, Params params) throws IOException {
         Geometry convexGeom = getShape();
         ShapeBuilder res = null;
         if (convexGeom.getGeometryType().equals("Point")){
@@ -181,11 +181,8 @@ public class InternalConvexHull extends InternalMetricsAggregation implements Co
         } else if (convexGeom.getGeometryType().equals("Polygon")) {
             res = GeoJsonShapeBuilder.newPolygon().points(convexGeom.getCoordinates());
         }
-        builder.startObject(name);
         builder.field(CONVEX_HULL);
-
         res.toXContent(builder, params);
-        builder.endObject();
         return builder;
     }
 

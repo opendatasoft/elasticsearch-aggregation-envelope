@@ -7,7 +7,7 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.lease.Releasables;
 import org.elasticsearch.common.util.ObjectArray;
-import org.elasticsearch.index.fielddata.GeoPointValues;
+import org.elasticsearch.index.fielddata.MultiGeoPointValues;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.metrics.MetricsAggregator;
@@ -23,7 +23,7 @@ import java.util.Set;
 public final class ConvexHullAggregator extends MetricsAggregator {
 
     private final ValuesSource.GeoPoint valuesSource;
-    private GeoPointValues values;
+    private MultiGeoPointValues values;
     private ObjectArray<Set<Coordinate>> geoPoints;
 
 
@@ -74,10 +74,11 @@ public final class ConvexHullAggregator extends MetricsAggregator {
             geoPoints.set(owningBucketOrdinal, polygon);
         }
 
-        final int valuesCount = values.setDocument(docId);
+        values.setDocument(docId);
+        final int valuesCount = values.count();
 
         for (int i=0; i<valuesCount; i++) {
-            GeoPoint value = values.nextValue();
+            GeoPoint value = values.valueAt(i);
             polygon.add(new Coordinate(value.getLon(), value.getLat()));
         }
     }
