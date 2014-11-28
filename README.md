@@ -7,7 +7,8 @@ This is a metric aggregation.
 
 |   Envelope aggregation Plugin  | elasticsearch     | Release date |
 |--------------------------------|-------------------|:------------:|
-| 1.1.0                          | 1.3.0 -> master   |  2014-07-25  |
+| 1.2.0                          | 1.4.0 -> master   |  2014-11-27  |
+| 1.1.0                          | 1.3.0             |  2014-07-25  |
 | 1.0.0                          | 1.2.2             |  2014-07-16  |
 
 
@@ -68,7 +69,7 @@ For example :
 Installation
 ------------
 
-`bin/plugin --install envelope_aggregation --url "https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v1.1.0/elasticsearch-envelope-aggregation-1.1.0.zip"`
+`bin/plugin --install envelope_aggregation --url "https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v1.2.0/elasticsearch-envelope-aggregation-1.2.0.zip"`
 
 License
 -------
