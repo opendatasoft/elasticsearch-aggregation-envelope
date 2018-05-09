@@ -1,0 +1,186 @@
+---
+setup:
+  - do:
+      indices.create:
+        index: test_index
+        body:
+          mappings:
+            doc:
+              properties:
+                point:
+                  type: geo_point
+
+---
+"Test aggregation on a single point":
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 1
+        body:
+          point:
+            - 45
+            - 45
+
+  - do:
+      indices.refresh:
+        index: [test_index]
+
+  - do:
+      search:
+        index: test_index
+        type: doc
+        body:
+          aggs:
+            viewport:
+              geo_bounds:
+                field: point
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 1 }
+  - match: { aggregations.envelope.convex_hull.type: Point }
+  - match: { aggregations.envelope.convex_hull.coordinates: [45.0, 45.0] }
+
+---
+"Test aggregation on two points":
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 1
+        body:
+          point:
+            - 45
+            - 45
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 2
+        body:
+          point:
+            - 46
+            - 46
+  - do:
+      indices.refresh:
+        index: [test_index]
+
+  - do:
+      search:
+        index: test_index
+        type: doc
+        body:
+          aggs:
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 2 }
+  - match: { aggregations.envelope.convex_hull.type: LineString }
+  - match: { aggregations.envelope.convex_hull.coordinates: [[45.0, 45.0], [45.999999940395355, 45.99999998230487]]}
+
+---
+"Test aggregation on three points":
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 1
+        body:
+          point:
+            - 45
+            - 45
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 2
+        body:
+          point:
+            - 50
+            - 50
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 3
+        body:
+          point:
+            - 50
+            - 45
+  - do:
+      indices.refresh:
+        index: [test_index]
+
+  - do:
+      search:
+        index: test_index
+        type: doc
+        body:
+          aggs:
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 3 }
+  - match: { aggregations.envelope.convex_hull.type: Polygon }
+  - match: { aggregations.envelope.convex_hull.coordinates: [[[45.0, 45.0], [49.99999995343387, 49.99999999534339], [49.99999995343387, 45.0], [45.0, 45.0]]]}
+
+
+---
+"Test aggregation on three points plus an inner point":
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 1
+        body:
+          point:
+            - 45
+            - 45
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 2
+        body:
+          point:
+            - 50
+            - 50
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 3
+        body:
+          point:
+            - 50
+            - 45
+  - do:
+      create:
+        index: test_index
+        type: doc
+        id: 4
+        body:
+          point:
+            - 49
+            - 46
+  - do:
+      indices.refresh:
+        index: [test_index]
+
+  - do:
+      search:
+        index: test_index
+        type: doc
+        body:
+          aggs:
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 4 }
+  - match: { aggregations.envelope.convex_hull.type: Polygon }
+  - match: { aggregations.envelope.convex_hull.coordinates: [[[45.0, 45.0], [49.99999995343387, 49.99999999534339], [49.99999995343387, 45.0], [45.0, 45.0]]]}

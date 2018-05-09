@@ -1,0 +1,51 @@
+def elasticVersion = '6.2.4'
+
+buildscript {
+    def elasticVersion = '6.2.4'
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.elasticsearch.gradle:build-tools:${elasticVersion}"
+    }
+}
+
+group = 'org.elasticsearch.plugin'
+version = elasticVersion
+
+apply plugin: 'java'
+apply plugin: 'elasticsearch.esplugin'
+apply plugin: 'idea'
+
+esplugin {
+    name 'envelope-aggregation'
+    description 'Returns envelope of geo points'
+    classname 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
+}
+
+dependencies {
+    compile "org.elasticsearch:elasticsearch:${elasticVersion}"
+    // We need jts and spatial4j in the same version as what ES uses, to avoid
+    // conflicts
+    //compile 'com.vividsolutions:jts:1.13'
+    //compile 'org.locationtech.spatial4j:spatial4j:0.6'
+}
+
+test.enabled = true
+
+// Skip license headers check
+licenseHeaders.enabled = false
+
+// Use elasticsearch checkstyle rules
+checkstyleTest.enabled = true
+
+// FIXME Dependency license check needs to be enabled
+licenseFile = rootProject.file('../LICENSE')
+noticeFile = rootProject.file('README.md')
+dependencyLicenses.enabled = false
+
+// FIXME thirdparty audit needs to be enabled
+thirdPartyAudit.enabled = false
