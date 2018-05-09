@@ -1,6 +1,7 @@
 Properties props = new Properties()
 props.load(project.file('gradle.properties').newDataInputStream())
 def elasticVersion = props.getProperty('elasticVersion')
+def pluginVersion = props.getProperty('pluginVersion')
 
 buildscript {
     Properties props = new Properties()
@@ -18,7 +19,7 @@ buildscript {
 }
 
 group = 'org.elasticsearch.plugin'
-version = elasticVersion
+version = pluginVersion
 
 apply plugin: 'java'
 apply plugin: 'elasticsearch.esplugin'
