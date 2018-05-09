@@ -1,7 +1,11 @@
-def elasticVersion = '6.2.4'
+Properties props = new Properties()
+props.load(project.file('gradle.properties').newDataInputStream())
+def elasticVersion = props.getProperty('elasticVersion')
 
 buildscript {
-    def elasticVersion = '6.2.4'
+    Properties props = new Properties()
+    props.load(project.file('gradle.properties').newDataInputStream())
+    def elasticVersion = props.getProperty('elasticVersion')
     repositories {
         mavenLocal()
         mavenCentral()
@@ -24,14 +28,15 @@ esplugin {
     name 'envelope-aggregation'
     description 'Returns envelope of geo points'
     classname 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
+    licenseFile = rootProject.file('LICENSE')
 }
 
 dependencies {
     compile "org.elasticsearch:elasticsearch:${elasticVersion}"
     // We need jts and spatial4j in the same version as what ES uses, to avoid
     // conflicts
-    //compile 'com.vividsolutions:jts:1.13'
-    //compile 'org.locationtech.spatial4j:spatial4j:0.6'
+    compile 'com.vividsolutions:jts:1.13'
+    compile 'org.locationtech.spatial4j:spatial4j:0.6'
 }
 
 test.enabled = true
@@ -42,10 +47,8 @@ licenseHeaders.enabled = false
 // Use elasticsearch checkstyle rules
 checkstyleTest.enabled = true
 
-// FIXME Dependency license check needs to be enabled
-licenseFile = rootProject.file('../LICENSE')
+licenseFile = rootProject.file('LICENSE')
 noticeFile = rootProject.file('README.md')
-dependencyLicenses.enabled = false
+dependencyLicenses.enabled = true
 
-// FIXME thirdparty audit needs to be enabled
-thirdPartyAudit.enabled = false
+thirdPartyAudit.enabled = true
