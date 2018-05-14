@@ -9,8 +9,8 @@ import org.elasticsearch.test.rest.yaml.ESClientYamlSuiteTestCase;
  * Generic loader for yaml integration tests
  */
 
-public class EnvelopeAggregationIT extends ESClientYamlSuiteTestCase {
-    public EnvelopeAggregationIT (@Name("yaml") ClientYamlTestCandidate testCandidate) {
+public class RestApiYamlIT extends ESClientYamlSuiteTestCase {
+    public RestApiYamlIT (@Name("yaml") ClientYamlTestCandidate testCandidate) {
         super(testCandidate);
     }
 
