@@ -1,12 +1,4 @@
-Properties props = new Properties()
-props.load(project.file('gradle.properties').newDataInputStream())
-def elasticVersion = props.getProperty('elasticVersion')
-def pluginVersion = props.getProperty('pluginVersion')
-
 buildscript {
-    Properties props = new Properties()
-    props.load(project.file('gradle.properties').newDataInputStream())
-    def elasticVersion = props.getProperty('elasticVersion')
     repositories {
         mavenLocal()
         mavenCentral()
@@ -14,33 +6,34 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.elasticsearch.gradle:build-tools:${elasticVersion}"
+        classpath "org.elasticsearch.gradle:build-tools:${es_version}"
     }
 }
 
 group = 'org.elasticsearch.plugin'
-version = pluginVersion
+version = "${plugin_version}"
 
 apply plugin: 'java'
 apply plugin: 'elasticsearch.esplugin'
 apply plugin: 'idea'
 
+// license of this project
+licenseFile = rootProject.file('LICENSE')
+noticeFile = rootProject.file('README.md')
+
 esplugin {
     name 'envelope-aggregation'
     description 'Returns envelope of geo points'
     classname 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
-    licenseFile = rootProject.file('LICENSE')
 }
 
 dependencies {
-    compile "org.elasticsearch:elasticsearch:${elasticVersion}"
+    compile "org.elasticsearch:elasticsearch:${es_version}"
     // We need jts and spatial4j in the same version as what ES uses, to avoid
     // conflicts
     compile 'com.vividsolutions:jts:1.13'
     compile 'org.locationtech.spatial4j:spatial4j:0.6'
 }
-
-test.enabled = true
 
 // Skip license headers check
 licenseHeaders.enabled = false
@@ -48,8 +41,6 @@ licenseHeaders.enabled = false
 // Use elasticsearch checkstyle rules
 checkstyleTest.enabled = true
 
-licenseFile = rootProject.file('LICENSE')
-noticeFile = rootProject.file('README.md')
 dependencyLicenses.enabled = true
 
 thirdPartyAudit.enabled = true
