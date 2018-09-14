@@ -1,6 +1,10 @@
 language: java
 jdk: oraclejdk9
+env: JDK='OpenJDK 10'
 apt:
   update: false
+before_install: . ./install-jdk.sh -F 10 -L GPL
 install: ./gradlew assemble
-script: ./gradlew check
+script:
+  - ./gradlew --version
+  - ./gradlew check
