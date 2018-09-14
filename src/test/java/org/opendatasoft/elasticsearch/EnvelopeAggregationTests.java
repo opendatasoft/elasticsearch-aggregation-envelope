@@ -3,23 +3,13 @@ package org.opendatasoft.elasticsearch;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.mocksocket.MockSocket;
 import org.elasticsearch.test.ESIntegTestCase;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
