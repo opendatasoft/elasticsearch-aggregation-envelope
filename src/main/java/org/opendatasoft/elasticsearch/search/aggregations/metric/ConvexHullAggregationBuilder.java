@@ -39,6 +39,17 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
         super(name, ValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
     }
 
+
+    protected ConvexHullAggregationBuilder(
+            ConvexHullAggregationBuilder clone, AggregatorFactories.Builder factoriesBuilder , Map<String, Object> metaData) {
+        super(clone, factoriesBuilder, metaData);
+    }
+
+    @Override
+    protected AggregationBuilder shallowCopy(AggregatorFactories.Builder factoriesBuilder, Map<String, Object> metaData) {
+        return new ConvexHullAggregationBuilder(this, factoriesBuilder, metaData);
+    }
+
     public ConvexHullAggregationBuilder(StreamInput in) throws IOException {
         super(in, ValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
     }

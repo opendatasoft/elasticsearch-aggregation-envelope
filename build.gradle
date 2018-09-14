@@ -33,7 +33,7 @@ dependencies {
     compile "org.elasticsearch:elasticsearch:${es_version}"
     // We need jts and spatial4j in the same version as what ES uses, to avoid
     // conflicts
-    compile 'org.locationtech.spatial4j:spatial4j:0.6'
+    compile 'org.locationtech.spatial4j:spatial4j:0.7'
 }
 
 // Skip license headers check

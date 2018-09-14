@@ -1,13 +1,13 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.LineStringBuilder;
 import org.elasticsearch.common.geo.builders.PointBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.geo.parsers.ShapeParser;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -147,7 +147,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
             for (int i = 0; i < coordsSize; i++) {
                 coords[i] = new Coordinate(in.readDouble(), in.readDouble());
             }
-            this.convexHull = new com.vividsolutions.jts.algorithm.ConvexHull(coords, ShapeBuilder.FACTORY).getConvexHull();
+            this.convexHull = new org.locationtech.jts.algorithm.ConvexHull(coords, ShapeBuilder.FACTORY).getConvexHull();
         } else {
             this.convexHull = null;
         }
