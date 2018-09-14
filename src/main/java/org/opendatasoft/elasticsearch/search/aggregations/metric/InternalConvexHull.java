@@ -1,17 +1,14 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.LineStringBuilder;
 import org.elasticsearch.common.geo.builders.PointBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
-import org.elasticsearch.common.geo.parsers.ShapeParser;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
@@ -23,7 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiValue implements ConvexHull {
-    private static final Logger logger = ESLoggerFactory.getLogger(InternalConvexHull.class);
 
     final Geometry convexHull;
 
@@ -32,20 +28,6 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
             Map<String, Object> metaData) {
         super(name, pipelineAggregators, metaData);
         this.convexHull = convexHull;
-        logger.info("Calling InternalConvexHull(...)");
-        logger.info(this.convexHull);
-    }
-
-    public InternalConvexHull(StreamInput in) throws IOException {
-        super(in);
-        int coordsSize = in.readInt();
-        Coordinate[] coords = new Coordinate[coordsSize];
-        for (int i = 0; i < coordsSize; i++) {
-            coords[i] = new Coordinate(in.readDouble(), in.readDouble());
-        }
-        this.convexHull = new com.vividsolutions.jts.algorithm.ConvexHull(coords, ShapeBuilder.FACTORY).getConvexHull();
-        logger.info("Calling InternalConvexHull(StreamInput in)");
-        logger.info(this.convexHull);
     }
 
     public static final String CONVEX_HULL = "convex_hull";
@@ -90,8 +72,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
+            builder.field("type", TYPE.shapename);
+            builder.field("coordinates");
             toXContent(builder, coordinate);
             return builder.endObject();
         }
@@ -107,8 +89,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
+            builder.field("type", TYPE.shapename);
+            builder.field("coordinates");
             coordinatesToXcontent(builder, false);
             builder.endObject();
             return builder;
@@ -126,8 +108,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.startArray(ShapeParser.FIELD_COORDINATES.getPreferredName());
+            builder.field("type", TYPE.shapename);
+            builder.startArray("coordinates");
             coordinatesArray(builder, params);
             builder.endArray();
             builder.endObject();
@@ -155,19 +137,35 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         return 0;
     }
 
+    public InternalConvexHull(StreamInput in) throws IOException {
+        super(in);
+        int coordsSize = in.readInt();
+        if (coordsSize > 0) {
+            Coordinate[] coords = new Coordinate[coordsSize];
+            for (int i = 0; i < coordsSize; i++) {
+                coords[i] = new Coordinate(in.readDouble(), in.readDouble());
+            }
+            this.convexHull = new com.vividsolutions.jts.algorithm.ConvexHull(coords, ShapeBuilder.FACTORY).getConvexHull();
+        } else {
+            this.convexHull = null;
+        }
+    }
+
     @Override
     protected void doWriteTo(StreamOutput out) throws IOException {
-        out.writeInt(convexHull.getCoordinates().length);
-        for (Coordinate coord: convexHull.getCoordinates()) {
-            out.writeDouble(coord.x);
-            out.writeDouble(coord.y);
+        if (convexHull != null) {
+            out.writeInt(convexHull.getCoordinates().length);
+            for (Coordinate coord: convexHull.getCoordinates()) {
+                out.writeDouble(coord.x);
+                out.writeDouble(coord.y);
+            }
+        } else {
+            out.writeInt(0);
         }
-
     }
 
     @Override
     public InternalAggregation doReduce(List<InternalAggregation> aggregations, ReduceContext reduceContext) {
-        logger.info("Calling doReduce()");
         Geometry merged = null;
 
         for (InternalAggregation aggregation: aggregations) {
@@ -180,19 +178,13 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
                 merged = merged.union(internalGeoPolygon.convexHull).convexHull();
             }
         }
-        logger.info("merged = " + merged);
-        if (merged == null) {
-            logger.warn("Merged convexHull is null. This probably means the aggregation didn't match anything");
-        }
         return new InternalConvexHull(name, merged, pipelineAggregators(), metaData);
     }
 
     @Override
     public XContentBuilder doXContentBody(XContentBuilder builder, Params params) throws IOException {
         Geometry convexGeom = getShape();
-        logger.info(convexGeom);
         if (convexGeom != null) {
-            logger.info(convexGeom.getGeometryType());
             builder.field(CONVEX_HULL);
             if (convexGeom.getGeometryType().equals("Point")) {
                 GeoJsonShapeBuilder.newPoint(convexGeom.getCoordinate()).toXContent(builder, params);

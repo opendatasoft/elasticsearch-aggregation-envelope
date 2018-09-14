@@ -1,12 +1,10 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
-import org.apache.logging.log4j.Logger;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.lucene.index.LeafReaderContext;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
-import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
@@ -30,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConvexHullAggregator extends MetricsAggregator {
-    private static final Logger logger = ESLoggerFactory.getLogger(ConvexHullAggregator.class);
 
     private final ValuesSource.GeoPoint valuesSource;
     private MultiGeoPointValues values;
@@ -47,7 +44,6 @@ public class ConvexHullAggregator extends MetricsAggregator {
 
     @Override
     public LeafBucketCollector getLeafCollector(LeafReaderContext ctx, LeafBucketCollector sub) {
-        logger.info("Calling getLeafCollector()");
         if (valuesSource == null) {
             return LeafBucketCollector.NO_OP_COLLECTOR;
         }
@@ -56,7 +52,6 @@ public class ConvexHullAggregator extends MetricsAggregator {
         return new LeafBucketCollectorBase(sub, values) {
             @Override
             public void collect(int doc, long bucket) throws IOException {
-                logger.info("Calling collect");
                 if (bucket >= geoPoints.size()) {
                     geoPoints = bigArrays.grow(geoPoints, bucket + 1);
                 }
@@ -81,16 +76,12 @@ public class ConvexHullAggregator extends MetricsAggregator {
 
     @Override
     public InternalAggregation buildAggregation(long bucket) throws IOException {
-        logger.info("Calling buildAggregation(" + bucket + ")");
         if (valuesSource == null) {
-            logger.info("valuesSource is null");
             return buildEmptyAggregation();
         }
-        logger.info("valuesSources: " + valuesSource);
         Set<Coordinate> points = geoPoints.get(bucket);
 
         if (points == null) {
-            logger.info("points is null");
             return buildEmptyAggregation();
         }
 
@@ -98,14 +89,12 @@ public class ConvexHullAggregator extends MetricsAggregator {
                 points.toArray(new Coordinate[points.size()]),
                 ShapeBuilder.FACTORY
         ).getConvexHull();
-        logger.info(convexHull);
 
         return new InternalConvexHull(name, convexHull, pipelineAggregators(), metaData());
     }
 
     @Override
     public InternalAggregation buildEmptyAggregation() {
-        logger.info("Calling buildEmptyAggregation()");
         return new InternalConvexHull(name, null, pipelineAggregators(), metaData());
     }
 
