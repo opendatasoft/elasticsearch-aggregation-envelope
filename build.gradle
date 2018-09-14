@@ -14,8 +14,8 @@ group = 'org.elasticsearch.plugin'
 version = "${plugin_version}"
 
 apply plugin: 'java'
-apply plugin: 'elasticsearch.esplugin'
 apply plugin: 'idea'
+apply plugin: 'elasticsearch.esplugin'
 
 // license of this project
 licenseFile = rootProject.file('LICENSE')
@@ -25,13 +25,14 @@ esplugin {
     name 'envelope-aggregation'
     description 'Returns envelope of geo points'
     classname 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
+    licenseFile = rootProject.file('LICENSE')
+    noticeFile = rootProject.file('README.md')
 }
 
 dependencies {
     compile "org.elasticsearch:elasticsearch:${es_version}"
     // We need jts and spatial4j in the same version as what ES uses, to avoid
     // conflicts
-    compile 'com.vividsolutions:jts:1.13'
     compile 'org.locationtech.spatial4j:spatial4j:0.6'
 }
 

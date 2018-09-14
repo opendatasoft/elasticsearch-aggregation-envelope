@@ -1,5 +1,6 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
+import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.lucene.index.LeafReaderContext;
@@ -85,7 +86,7 @@ public class ConvexHullAggregator extends MetricsAggregator {
             return buildEmptyAggregation();
         }
 
-        Geometry convexHull = new com.vividsolutions.jts.algorithm.ConvexHull(
+        Geometry convexHull = new ConvexHull(
                 points.toArray(new Coordinate[points.size()]),
                 ShapeBuilder.FACTORY
         ).getConvexHull();

@@ -1,12 +1,13 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.LineStringBuilder;
 import org.elasticsearch.common.geo.builders.PointBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import org.elasticsearch.common.geo.parsers.ShapeParser;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiValue implements ConvexHull {
 
@@ -72,8 +74,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(FIELD_TYPE, TYPE.shapename);
-            builder.field(FIELD_COORDINATES);
+            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
+            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
             toXContent(builder, coordinate);
             return builder.endObject();
         }
@@ -89,8 +91,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(FIELD_TYPE, TYPE.shapename);
-            builder.field(FIELD_COORDINATES);
+            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
+            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
             coordinatesToXcontent(builder, false);
             builder.endObject();
             return builder;
@@ -108,8 +110,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(FIELD_TYPE, TYPE.shapename);
-            builder.startArray(FIELD_COORDINATES);
+            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
+            builder.startArray(ShapeParser.FIELD_COORDINATES.getPreferredName());
             coordinatesArray(builder, params);
             builder.endArray();
             builder.endObject();
@@ -199,7 +201,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
 
     @Override
     protected int doHashCode() {
-        return convexHull.hashCode();
+        return Objects.hash(convexHull);
     }
 
     @Override

@@ -18,6 +18,7 @@ import org.elasticsearch.search.aggregations.support.ValuesSourceType;
 import org.elasticsearch.search.internal.SearchContext;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder<ValuesSource.GeoPoint, ConvexHullAggregationBuilder> {
