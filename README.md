@@ -1,17 +1,9 @@
-Elasticsearch Aggregation Envelope Plugin
-=========================================
+Elasticsearch Envelope Aggregation
+==================================
 
 The envelope aggregation plugin adds the possibility to compute convex envelope for geo points.
 
 This is a metric aggregation.
-
-|   Envelope aggregation Plugin  | elasticsearch     | Release date |
-|--------------------------------|-------------------|:------------:|
-| 6.2.4                          | 6.2.4             |              |
-| 1.2.0                          | 1.4.0 -> master   |  2014-11-27  |
-| 1.1.0                          | 1.3.0             |  2014-07-25  |
-| 1.0.0                          | 1.2.2             |  2014-07-16  |
-
 
 Usage
 -----
@@ -40,37 +32,67 @@ For example :
 
 ```json
 {
-  "type": "Polygon",
-  "coordinates": [
-         [
-            [
-               2.3561,
-               48.8322
-            ],
-            [
-               2.33,
-               48.8493
-            ],
-            [
-               2.3333,
-               48.8667
-            ],
-            [
-               2.3615,
-               48.8637
-            ],
-            [
-               2.3561,
-               48.8322
-            ]
-         ]
-    ]
+    "convex_hull": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            2.454928932711482,
+            48.82157796062529
+          ],
+          [
+            2.336266916245222,
+            48.82202098611742
+          ],
+          [
+            2.252937974408269,
+            48.84604096412659
+          ],
+          [
+            2.240357995033264,
+            48.86348098050803
+          ],
+          [
+            2.245857948437333,
+            48.86913998052478
+          ],
+          [
+            2.2791109699755907,
+            48.87238298077136
+          ],
+          [
+            2.380628976970911,
+            48.879756960086524
+          ],
+          [
+            2.4384649470448494,
+            48.8420399883762
+          ],
+          [
+            2.454928932711482,
+            48.82157796062529
+          ]
+        ]
+      ]
+    }
 }
 ```
+
 Installation
 ------------
 
-`bin/plugin --install envelope_aggregation --url "https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v1.2.0/elasticsearch-envelope-aggregation-1.2.0.zip"`
+Plugin versions are available for (at least) all minor versions of Elasticsearch since 6.0.
+
+The first 3 digits of plugin version is Elasticsearch versioning. The last digit is used for plugin versioning under an elasticsearch version.
+
+To install it, launch this command in Elasticsearch directory replacing the url by the correct link for your Elasticsearch version (see table)
+`./bin/elasticsearch-plugin install https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v6.0.1.0/envelope-aggregation-6.0.1.0.zip`
+
+| elasticsearch version | plugin version | plugin url |
+| --------------------- | -------------- | ---------- |
+| 6.0.1 | 6.0.1.0 | https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v6.0.1.0/envelope-aggregation-6.0.1.0.zip |
+
+
 
 License
 -------

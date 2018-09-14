@@ -45,7 +45,7 @@ public class EnvelopeAggregationTests extends ESIntegTestCase {
     public void testLoadData() throws Exception {
         Client client = client();
 
-        IndexResponse response = client.prepareIndex("test", "_doc")
+        IndexResponse response = client.prepareIndex("test", "doc")
                 .setSource(jsonBuilder()
                     .startObject()
                         .field("user", "user1")
@@ -60,7 +60,7 @@ public class EnvelopeAggregationTests extends ESIntegTestCase {
         String _id = response.getId();
         //System.out.println(_id);
 
-        GetResponse response2 = client.prepareGet("test", "_doc", _id).get();
+        GetResponse response2 = client.prepareGet("test", "doc", _id).get();
         //System.out.println(response2);
         assertEquals("user1", response2.getSource().get("user"));
 

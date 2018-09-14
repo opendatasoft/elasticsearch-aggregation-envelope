@@ -72,8 +72,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field("type", TYPE.shapename);
-            builder.field("coordinates");
+            builder.field(FIELD_TYPE, TYPE.shapename);
+            builder.field(FIELD_COORDINATES);
             toXContent(builder, coordinate);
             return builder.endObject();
         }
@@ -89,8 +89,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field("type", TYPE.shapename);
-            builder.field("coordinates");
+            builder.field(FIELD_TYPE, TYPE.shapename);
+            builder.field(FIELD_COORDINATES);
             coordinatesToXcontent(builder, false);
             builder.endObject();
             return builder;
@@ -108,8 +108,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field("type", TYPE.shapename);
-            builder.startArray("coordinates");
+            builder.field(FIELD_TYPE, TYPE.shapename);
+            builder.startArray(FIELD_COORDINATES);
             coordinatesArray(builder, params);
             builder.endArray();
             builder.endObject();
