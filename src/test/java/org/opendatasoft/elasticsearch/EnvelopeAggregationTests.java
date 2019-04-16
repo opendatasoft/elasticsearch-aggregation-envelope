@@ -61,7 +61,7 @@ public class EnvelopeAggregationTests extends ESIntegTestCase {
                 .setQuery(QueryBuilders.matchAllQuery())
                 .get();
         //System.out.println(response3);
-        assertEquals(1, response3.getHits().totalHits);
+        assertEquals(1, response3.getHits().getTotalHits().value);
     }
 
 }

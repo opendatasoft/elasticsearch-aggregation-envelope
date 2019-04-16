@@ -5,17 +5,15 @@ setup:
         index: test_index
         body:
           mappings:
-            doc:
-              properties:
-                point:
-                  type: geo_point
+            properties:
+              point:
+                type: geo_point
 
 ---
 "Test aggregation on a single point":
   - do:
       create:
         index: test_index
-        type: doc
         id: 1
         body:
           point:
@@ -28,8 +26,8 @@ setup:
 
   - do:
       search:
+        rest_total_hits_as_int: true
         index: test_index
-        type: doc
         body:
           aggs:
             viewport:
@@ -48,7 +46,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 1
         body:
           point:
@@ -57,7 +54,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 2
         body:
           point:
@@ -69,8 +65,8 @@ setup:
 
   - do:
       search:
+        rest_total_hits_as_int: true
         index: test_index
-        type: doc
         body:
           aggs:
             envelope:
@@ -79,14 +75,13 @@ setup:
 
   - match: { hits.total: 2 }
   - match: { aggregations.envelope.convex_hull.type: LineString }
-  - match: { aggregations.envelope.convex_hull.coordinates: [[45.0, 45.0], [45.999999940395355, 45.99999998230487]]}
+  - match: { aggregations.envelope.convex_hull.coordinates: [[45.999999940395355, 45.99999998230487], [45.0, 45.0]]}
 
 ---
 "Test aggregation on three points":
   - do:
       create:
         index: test_index
-        type: doc
         id: 1
         body:
           point:
@@ -95,7 +90,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 2
         body:
           point:
@@ -104,7 +98,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 3
         body:
           point:
@@ -116,8 +109,8 @@ setup:
 
   - do:
       search:
+        rest_total_hits_as_int: true
         index: test_index
-        type: doc
         body:
           aggs:
             envelope:
@@ -134,7 +127,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 1
         body:
           point:
@@ -143,7 +135,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 2
         body:
           point:
@@ -152,7 +143,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 3
         body:
           point:
@@ -161,7 +151,6 @@ setup:
   - do:
       create:
         index: test_index
-        type: doc
         id: 4
         body:
           point:
@@ -173,8 +162,8 @@ setup:
 
   - do:
       search:
+        rest_total_hits_as_int: true
         index: test_index
-        type: doc
         body:
           aggs:
             envelope:
