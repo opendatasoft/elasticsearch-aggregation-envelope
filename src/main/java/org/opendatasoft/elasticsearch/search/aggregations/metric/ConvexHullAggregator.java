@@ -3,6 +3,7 @@ package org.opendatasoft.elasticsearch.search.aggregations.metric;
 import org.apache.lucene.index.LeafReaderContext;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
+import org.elasticsearch.common.lease.Releasables;
 import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
@@ -97,6 +98,11 @@ public class ConvexHullAggregator extends MetricsAggregator {
     @Override
     public InternalAggregation buildEmptyAggregation() {
         return new InternalConvexHull(name, null, pipelineAggregators(), metaData());
+    }
+
+    @Override
+    protected void doClose() {
+        Releasables.close(geoPoints);
     }
 
     public static class Factory extends ValuesSourceAggregatorFactory<ValuesSource.GeoPoint, ConvexHullAggregator.Factory> {
