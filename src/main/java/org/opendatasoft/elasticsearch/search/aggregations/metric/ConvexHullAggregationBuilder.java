@@ -65,10 +65,10 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     @Override
-    protected ValuesSourceAggregatorFactory<ValuesSource.GeoPoint, ?> innerBuild(
+    protected ValuesSourceAggregatorFactory<ValuesSource.GeoPoint> innerBuild(
             SearchContext context,
             ValuesSourceConfig<ValuesSource.GeoPoint> config,
-            AggregatorFactory<?> parent,
+            AggregatorFactory parent,
             AggregatorFactories.Builder subFactoriesBuilder) throws IOException {
         return new ConvexHullAggregator.Factory(name, config, context, parent, subFactoriesBuilder, metaData);
     }
@@ -79,12 +79,12 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     @Override
-    protected int innerHashCode() {
+    public int hashCode() {
         return 0;
     }
 
     @Override
-    protected boolean innerEquals(Object obj) {
+    public boolean equals(Object obj) {
         return false;
     }
 }

@@ -200,12 +200,12 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     }
 
     @Override
-    protected int doHashCode() {
+    public int hashCode() {
         return Objects.hash(convexHull);
     }
 
     @Override
-    protected boolean doEquals(Object obj) {
+    public boolean equals(Object obj) {
         InternalConvexHull other = (InternalConvexHull) obj;
         return convexHull.equals(other.convexHull);
     }

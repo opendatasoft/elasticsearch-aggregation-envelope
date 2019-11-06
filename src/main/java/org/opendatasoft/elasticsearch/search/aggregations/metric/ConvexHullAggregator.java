@@ -105,11 +105,11 @@ public class ConvexHullAggregator extends MetricsAggregator {
         Releasables.close(geoPoints);
     }
 
-    public static class Factory extends ValuesSourceAggregatorFactory<ValuesSource.GeoPoint, ConvexHullAggregator.Factory> {
+    public static class Factory extends ValuesSourceAggregatorFactory<ValuesSource.GeoPoint> {
 
         protected Factory(
                 String name, ValuesSourceConfig<ValuesSource.GeoPoint> config,
-                SearchContext context, AggregatorFactory<?> parent,
+                SearchContext context, AggregatorFactory parent,
                 AggregatorFactories.Builder subFactoriesBuilder,
                 Map<String, Object> metaData) throws IOException {
             super(name, config, context, parent, subFactoriesBuilder, metaData);
