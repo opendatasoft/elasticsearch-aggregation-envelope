@@ -7,6 +7,7 @@ import org.elasticsearch.common.lease.Releasables;
 import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
+import org.elasticsearch.index.query.QueryShardContext;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
 import org.elasticsearch.search.aggregations.AggregatorFactory;
@@ -109,7 +110,7 @@ public class ConvexHullAggregator extends MetricsAggregator {
 
         protected Factory(
                 String name, ValuesSourceConfig<ValuesSource.GeoPoint> config,
-                SearchContext context, AggregatorFactory parent,
+                QueryShardContext context, AggregatorFactory parent,
                 AggregatorFactories.Builder subFactoriesBuilder,
                 Map<String, Object> metaData) throws IOException {
             super(name, config, context, parent, subFactoriesBuilder, metaData);
@@ -117,17 +118,18 @@ public class ConvexHullAggregator extends MetricsAggregator {
 
         @Override
         protected Aggregator createUnmapped(
+                SearchContext searchContext,
                 Aggregator parent, List<PipelineAggregator> list,
                 Map<String, Object> metaData) throws IOException {
-            return new ConvexHullAggregator(name, context, parent, null, list, metaData);
+            return new ConvexHullAggregator(name, searchContext, parent, null, list, metaData);
         }
 
         @Override
         protected Aggregator doCreateInternal(
-                ValuesSource.GeoPoint valuesSource, Aggregator parent,
+                ValuesSource.GeoPoint valuesSource, SearchContext searchContext, Aggregator parent,
                 boolean collectsFromSingleBucket, List<PipelineAggregator> list,
                 Map<String, Object> metaData) throws IOException {
-            return new ConvexHullAggregator(name, context, parent, valuesSource, list, metaData);
+            return new ConvexHullAggregator(name, searchContext, parent, valuesSource, list, metaData);
         }
     }
 }
