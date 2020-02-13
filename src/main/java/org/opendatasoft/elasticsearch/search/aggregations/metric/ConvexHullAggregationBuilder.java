@@ -9,13 +9,13 @@ import org.elasticsearch.index.query.QueryShardContext;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
 import org.elasticsearch.search.aggregations.AggregatorFactory;
+import org.elasticsearch.search.aggregations.support.CoreValuesSourceType;
 import org.elasticsearch.search.aggregations.support.ValueType;
 import org.elasticsearch.search.aggregations.support.ValuesSource;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregationBuilder;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregatorFactory;
 import org.elasticsearch.search.aggregations.support.ValuesSourceConfig;
 import org.elasticsearch.search.aggregations.support.ValuesSourceParserHelper;
-import org.elasticsearch.search.aggregations.support.ValuesSourceType;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     public ConvexHullAggregationBuilder(String name) {
-        super(name, ValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
+        super(name, CoreValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
     }
 
 
@@ -51,7 +51,7 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     public ConvexHullAggregationBuilder(StreamInput in) throws IOException {
-        super(in, ValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
+        super(in, CoreValuesSourceType.GEOPOINT, ValueType.GEOPOINT);
     }
 
     @Override

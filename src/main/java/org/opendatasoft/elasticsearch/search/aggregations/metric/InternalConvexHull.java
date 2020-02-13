@@ -167,7 +167,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     }
 
     @Override
-    public InternalAggregation doReduce(List<InternalAggregation> aggregations, ReduceContext reduceContext) {
+    public InternalAggregation reduce(List<InternalAggregation> aggregations, ReduceContext reduceContext) {
         Geometry merged = null;
 
         for (InternalAggregation aggregation: aggregations) {
