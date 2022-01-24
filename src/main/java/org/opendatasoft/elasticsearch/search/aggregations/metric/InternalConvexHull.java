@@ -1,19 +1,18 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
-import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
-import org.elasticsearch.common.geo.builders.LineStringBuilder;
-import org.elasticsearch.common.geo.builders.PointBuilder;
-import org.elasticsearch.common.geo.builders.PolygonBuilder;
-import org.elasticsearch.common.geo.builders.ShapeBuilder;
-import org.elasticsearch.common.geo.parsers.ShapeParser;
+import org.elasticsearch.legacygeo.builders.CoordinatesBuilder;
+import org.elasticsearch.legacygeo.builders.LineStringBuilder;
+import org.elasticsearch.legacygeo.builders.PointBuilder;
+import org.elasticsearch.legacygeo.builders.PolygonBuilder;
+import org.elasticsearch.legacygeo.builders.ShapeBuilder;
+import org.elasticsearch.legacygeo.parsers.ShapeParser;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
-import org.elasticsearch.search.aggregations.pipeline.PipelineAggregator;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,9 +25,9 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     final Geometry convexHull;
 
     public InternalConvexHull(
-            String name, Geometry convexHull, List<PipelineAggregator> pipelineAggregators,
+            String name, Geometry convexHull,
             Map<String, Object> metaData) {
-        super(name, pipelineAggregators, metaData);
+        super(name, metaData);
         this.convexHull = convexHull;
     }
 
@@ -130,8 +129,13 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         }
 
         public static GeoJsonPolygonBuilder newPolygon(Coordinate[] coordinates) {
-            return new GeoJsonPolygonBuilder(new CoordinatesBuilder().coordinates(coordinates));
+                return new GeoJsonPolygonBuilder(new CoordinatesBuilder().coordinates(coordinates));
         }
+    }
+
+    @Override
+    public Iterable<String> valueNames() {
+        return null;
     }
 
     @Override
@@ -180,7 +184,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
                 merged = merged.union(internalGeoPolygon.convexHull).convexHull();
             }
         }
-        return new InternalConvexHull(name, merged, pipelineAggregators(), metaData);
+        return new InternalConvexHull(name, merged, metadata);
     }
 
     @Override

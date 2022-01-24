@@ -1,8 +1,12 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
     }
 
     dependencies {
@@ -18,8 +22,8 @@ apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
 
 // license of this project
-licenseFile = rootProject.file('LICENSE')
-noticeFile = rootProject.file('README.md')
+//licenseFile = rootProject.file('LICENSE')
+//noticeFile = rootProject.file('README.md')
 
 esplugin {
     name 'envelope-aggregation'
@@ -30,16 +34,21 @@ esplugin {
 }
 
 dependencies {
-    compile "org.elasticsearch:elasticsearch:${es_version}"
+    implementation "org.elasticsearch:elasticsearch:${es_version}"
+
+    implementation files('libs/legacy-geo-7.16.3.jar')
+    implementation files('libs/jts-core-1.15.0.jar')
+    implementation files('libs/spatial4j-0.7.jar')
+    implementation files('lucene-spatial-extras-8.10.1.jar')
 }
 
 
 // Skip license headers check
-licenseHeaders.enabled = false
+//licenseHeaders.enabled = false
 
 // Use elasticsearch checkstyle rules
-checkstyleTest.enabled = true
+//checkstyleTest.enabled = true
 
-dependencyLicenses.enabled = true
+//dependencyLicenses.enabled = true
 
-thirdPartyAudit.enabled = true
+//thirdPartyAudit.enabled = true
