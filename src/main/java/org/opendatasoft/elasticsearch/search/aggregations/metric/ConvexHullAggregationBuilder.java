@@ -73,8 +73,7 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
 
     @Override
     protected ValuesSourceRegistry.RegistryKey<?> getRegistryKey() {
-        // FIXME
-        return null;
+        return REGISTRY_KEY;
     }
 
     @Override
@@ -104,5 +103,13 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     @Override
     public boolean equals(Object obj) {
         return false;
+    }
+
+    public static void registerAggregators(ValuesSourceRegistry.Builder builder) {
+        builder.register(
+                ConvexHullAggregationBuilder.REGISTRY_KEY,
+                CoreValuesSourceType.GEOPOINT,
+                ConvexHullAggregator::new,
+                true);
     }
 }

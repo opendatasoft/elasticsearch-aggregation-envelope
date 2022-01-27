@@ -36,7 +36,7 @@ public class ConvexHullAggregator extends MetricsAggregator {
     private ObjectArray<Set<Coordinate>> geoPoints;
     private BigArrays bigArrays;
 
-    protected ConvexHullAggregator(
+    public ConvexHullAggregator(
             String name, AggregationContext context, Aggregator parent,
             ValuesSource.GeoPoint valuesSource,
             Map<String, Object> metadata) throws IOException {

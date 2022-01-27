@@ -16,7 +16,8 @@ public class EnvelopeAggregation extends Plugin implements SearchPlugin {
                         ConvexHullAggregationBuilder.NAME,
                         ConvexHullAggregationBuilder::new,
                         ConvexHullAggregationBuilder::parse)
-                .addResultReader(InternalConvexHull::new)
+                    .addResultReader(InternalConvexHull::new)
+                        .setAggregatorRegistrar(ConvexHullAggregationBuilder::registerAggregators)
         );
 
         return r;
