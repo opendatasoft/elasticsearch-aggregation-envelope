@@ -30,51 +30,55 @@ It returns a Geometry:
 
 For example :
 
+```
+PUT test_envelope
+
+PUT test_envelope/_mapping
+{
+  "properties": {
+    "location": {"type": "geo_point"}
+  }
+}
+
+POST test_envelope/_bulk?refresh
+{"index":{"_id":1}}
+{"location":[2.454929, 48.821578]}
+{"index":{"_id":2}}
+{"location":[2.245858, 48.86914]}
+
+POST test_envelope/_search?size=0
+{
+    "aggs": {
+        "my_agg": {
+            "envelope": {
+                "field": "location"
+            }
+        }
+    }
+}
+```
+
+This query should return the envelope of the two points (i.e., the following line):
+
 ```json
 {
-    "convex_hull": {
-      "type": "Polygon",
-      "coordinates": [
-        [
+  "aggregations": {
+    "my_agg": {
+      "convex_hull": {
+        "type": "LineString",
+        "coordinates": [
           [
             2.454928932711482,
             48.82157796062529
-          ],
-          [
-            2.336266916245222,
-            48.82202098611742
-          ],
-          [
-            2.252937974408269,
-            48.84604096412659
-          ],
-          [
-            2.240357995033264,
-            48.86348098050803
           ],
           [
             2.245857948437333,
             48.86913998052478
-          ],
-          [
-            2.2791109699755907,
-            48.87238298077136
-          ],
-          [
-            2.380628976970911,
-            48.879756960086524
-          ],
-          [
-            2.4384649470448494,
-            48.8420399883762
-          ],
-          [
-            2.454928932711482,
-            48.82157796062529
           ]
         ]
-      ]
+      }
     }
+  }
 }
 ```
 
