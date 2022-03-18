@@ -1,8 +1,12 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
     }
 
     dependencies {
@@ -16,10 +20,11 @@ version = "${plugin_version}"
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
+apply plugin: 'elasticsearch.yaml-rest-test'
 
 // license of this project
-licenseFile = rootProject.file('LICENSE')
-noticeFile = rootProject.file('README.md')
+//licenseFile = rootProject.file('LICENSE')
+//noticeFile = rootProject.file('README.md')
 
 esplugin {
     name 'envelope-aggregation'
@@ -30,16 +35,34 @@ esplugin {
 }
 
 dependencies {
-    compile "org.elasticsearch:elasticsearch:${es_version}"
+    implementation "org.elasticsearch:elasticsearch:${es_version}"
+
+    // We ship the legacy geo archive with sources,
+    // because the compilation stage needs to resolve symbols
+    // However this archive is not included in the final plugin bundle, since
+    // legacy geo and its dependencies (JTS) are already present at runtime
+    // with ES (see the jar/manifest rule below)
+    compileOnly files('libs/legacy-geo-7.17.1.jar')
+
+    yamlRestTestImplementation "org.elasticsearch.test:framework:${es_version}"
+    yamlRestTestImplementation "org.apache.logging.log4j:log4j-core:2.17.1"
 }
 
+// Since this plugin is meant to be loaded in an ES >=7.16 instance,
+// we can "link" it to existing classes through a class path without adding other archives
+// to the plugin bundle
+jar {
+    manifest {
+        attributes(
+                "Class-Path": "../../modules/legacy-geo/legacy-geo-7.17.1.jar ../../modules/legacy-geo/jts-core-1.15.0.jar ../../modules/legacy-geo/spatial4j-0.7.jar")
 
-// Skip license headers check
-licenseHeaders.enabled = false
+    }
+}
 
-// Use elasticsearch checkstyle rules
-checkstyleTest.enabled = true
-
-dependencyLicenses.enabled = true
-
-thirdPartyAudit.enabled = true
+// Make sure the ES distribution used for rest tests is the "complete" variant
+// Otherwise weirds errors occur (like the geo_shape type is not handled)
+testClusters.configureEach {
+    testDistribution = 'DEFAULT'
+    // disable security to disable failing warnings
+    setting 'xpack.security.enabled', 'false'
+}

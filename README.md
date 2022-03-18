@@ -30,51 +30,55 @@ It returns a Geometry:
 
 For example :
 
+```
+PUT test_envelope
+
+PUT test_envelope/_mapping
+{
+  "properties": {
+    "location": {"type": "geo_point"}
+  }
+}
+
+POST test_envelope/_bulk?refresh
+{"index":{"_id":1}}
+{"location":[2.454929, 48.821578]}
+{"index":{"_id":2}}
+{"location":[2.245858, 48.86914]}
+
+POST test_envelope/_search?size=0
+{
+    "aggs": {
+        "my_agg": {
+            "envelope": {
+                "field": "location"
+            }
+        }
+    }
+}
+```
+
+This query should return the envelope of the two points (i.e., the following line):
+
 ```json
 {
-    "convex_hull": {
-      "type": "Polygon",
-      "coordinates": [
-        [
+  "aggregations": {
+    "my_agg": {
+      "convex_hull": {
+        "type": "LineString",
+        "coordinates": [
           [
             2.454928932711482,
             48.82157796062529
-          ],
-          [
-            2.336266916245222,
-            48.82202098611742
-          ],
-          [
-            2.252937974408269,
-            48.84604096412659
-          ],
-          [
-            2.240357995033264,
-            48.86348098050803
           ],
           [
             2.245857948437333,
             48.86913998052478
-          ],
-          [
-            2.2791109699755907,
-            48.87238298077136
-          ],
-          [
-            2.380628976970911,
-            48.879756960086524
-          ],
-          [
-            2.4384649470448494,
-            48.8420399883762
-          ],
-          [
-            2.454928932711482,
-            48.82157796062529
           ]
         ]
-      ]
+      }
     }
+  }
 }
 ```
 
@@ -86,7 +90,7 @@ Plugin versions are available for (at least) all minor versions of Elasticsearch
 The first 3 digits of plugin version is Elasticsearch versioning. The last digit is used for plugin versioning under an elasticsearch version.
 
 To install it, launch this command in Elasticsearch directory replacing the url by the correct link for your Elasticsearch version (see table)
-`./bin/elasticsearch-plugin install https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.6.0.0/envelope-aggregation-7.6.0.0.zip`
+`./bin/elasticsearch-plugin install https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.17.1.0/envelope-aggregation-7.17.1.0.zip`
 
 | elasticsearch version | plugin version | plugin url |
 | --------------------- | -------------- | ---------- |
@@ -105,7 +109,30 @@ To install it, launch this command in Elasticsearch directory replacing the url 
 | 7.4.0 | 7.4.0.0 | https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.4.0.0/envelope-aggregation-7.4.0.0.zip |
 | 7.5.1 | 7.5.1.0 | https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.5.1.0/envelope-aggregation-7.5.1.0.zip |
 | 7.6.0 | 7.6.0.0 | https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.6.0.0/envelope-aggregation-7.6.0.0.zip |
+| 7.17.1 | 7.17.1.0 | https://github.com/opendatasoft/elasticsearch-aggregation-envelope/releases/download/v7.17.1.0/envelope-aggregation-7.17.1.0.zip |
 
+
+## Development Environment Setup
+
+Build the plugin using gradle:
+``` shell
+./gradlew build
+```
+
+or
+``` shell
+./gradlew assemble  # (to avoid the test suite)
+```
+
+Then the following command will start a dockerized ES and will install the previously built plugin:
+``` shell
+docker-compose up
+```
+
+Please be careful during development: you'll need to manually rebuild the .zip using `./gradlew build` on each code
+change before running `docker-compose` up again.
+
+> NOTE: In `docker-compose.yml` you can uncomment the debug env and attach a REMOTE JVM on `*:5005` to debug the plugin.
 
 
 License
