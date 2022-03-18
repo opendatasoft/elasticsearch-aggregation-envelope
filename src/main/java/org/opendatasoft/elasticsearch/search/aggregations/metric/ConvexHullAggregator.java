@@ -2,11 +2,11 @@ package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
 import org.apache.lucene.index.LeafReaderContext;
 import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.core.Releasables;
-import org.elasticsearch.legacygeo.builders.ShapeBuilder;
 import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
+import org.elasticsearch.core.Releasables;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
+import org.elasticsearch.legacygeo.builders.ShapeBuilder;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
 import org.elasticsearch.search.aggregations.AggregatorFactory;
@@ -25,7 +25,6 @@ import org.locationtech.jts.geom.Geometry;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
