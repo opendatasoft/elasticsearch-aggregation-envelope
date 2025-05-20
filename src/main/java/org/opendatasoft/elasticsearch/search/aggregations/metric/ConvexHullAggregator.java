@@ -1,12 +1,12 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
-import org.apache.lucene.index.LeafReaderContext;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
 import org.elasticsearch.core.Releasables;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
 import org.elasticsearch.legacygeo.builders.ShapeBuilder;
+import org.elasticsearch.search.aggregations.AggregationExecutionContext;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
 import org.elasticsearch.search.aggregations.AggregatorFactory;
@@ -31,14 +31,16 @@ import java.util.Set;
 public class ConvexHullAggregator extends MetricsAggregator {
 
     private final ValuesSource.GeoPoint valuesSource;
-    private MultiGeoPointValues values;
     private ObjectArray<Set<Coordinate>> geoPoints;
     private BigArrays bigArrays;
 
     public ConvexHullAggregator(
-            String name, AggregationContext context, Aggregator parent,
-            ValuesSource.GeoPoint valuesSource,
-            Map<String, Object> metadata) throws IOException {
+        String name,
+        AggregationContext context,
+        Aggregator parent,
+        ValuesSource.GeoPoint valuesSource,
+        Map<String, Object> metadata
+    ) throws IOException {
         super(name, context, parent, metadata);
         this.valuesSource = valuesSource;
         bigArrays = context.bigArrays();
@@ -46,11 +48,11 @@ public class ConvexHullAggregator extends MetricsAggregator {
     }
 
     @Override
-    public LeafBucketCollector getLeafCollector(LeafReaderContext ctx, LeafBucketCollector sub) {
+    public LeafBucketCollector getLeafCollector(AggregationExecutionContext aggCtx, LeafBucketCollector sub) throws IOException {
         if (valuesSource == null) {
             return LeafBucketCollector.NO_OP_COLLECTOR;
         }
-        final MultiGeoPointValues values = valuesSource.geoPointValues(ctx);
+        final MultiGeoPointValues values = valuesSource.geoPointValues(aggCtx.getLeafReaderContext());
         return new LeafBucketCollectorBase(sub, values) {
             @Override
             public void collect(int doc, long bucket) throws IOException {
@@ -68,7 +70,7 @@ public class ConvexHullAggregator extends MetricsAggregator {
                 values.advanceExact(doc);
                 final int valuesCount = values.docValueCount();
 
-                for (int i=0; i < valuesCount; i++) {
+                for (int i = 0; i < valuesCount; i++) {
                     GeoPoint value = values.nextValue();
                     polygon.add(new Coordinate(value.getLon(), value.getLat()));
                 }
@@ -87,17 +89,14 @@ public class ConvexHullAggregator extends MetricsAggregator {
             return buildEmptyAggregation();
         }
 
-        Geometry convexHull = new ConvexHull(
-                points.toArray(new Coordinate[points.size()]),
-                ShapeBuilder.FACTORY
-        ).getConvexHull();
+        Geometry convexHull = new ConvexHull(points.toArray(new Coordinate[points.size()]), ShapeBuilder.FACTORY).getConvexHull();
 
-        return new InternalConvexHull(name, convexHull, metadata());
+        return new InternalConvexHull(name, convexHull, null, metadata());
     }
 
     @Override
     public InternalAggregation buildEmptyAggregation() {
-        return new InternalConvexHull(name, null, metadata());
+        return new InternalConvexHull(name, null, null, metadata());
     }
 
     @Override
@@ -108,22 +107,24 @@ public class ConvexHullAggregator extends MetricsAggregator {
     public static class Factory extends ValuesSourceAggregatorFactory {
 
         protected Factory(
-                String name, ValuesSourceConfig config,
-                AggregationContext context, AggregatorFactory parent,
-                AggregatorFactories.Builder subFactoriesBuilder,
-                Map<String, Object> metaData) throws IOException {
+            String name,
+            ValuesSourceConfig config,
+            AggregationContext context,
+            AggregatorFactory parent,
+            AggregatorFactories.Builder subFactoriesBuilder,
+            Map<String, Object> metaData
+        ) throws IOException {
             super(name, config, context, parent, subFactoriesBuilder, metaData);
         }
 
         @Override
-        protected Aggregator createUnmapped(
-                Aggregator parent,
-                Map<String, Object> metadata) throws IOException {
+        protected Aggregator createUnmapped(Aggregator parent, Map<String, Object> metadata) throws IOException {
             return new ConvexHullAggregator(name, context, parent, null, metadata);
         }
 
         @Override
-        protected Aggregator doCreateInternal(Aggregator parent, CardinalityUpperBound cardinalityUpperBound, Map<String, Object> metadata) throws IOException {
+        protected Aggregator doCreateInternal(Aggregator parent, CardinalityUpperBound cardinalityUpperBound, Map<String, Object> metadata)
+            throws IOException {
             ValuesSource.GeoPoint valuesSource = (ValuesSource.GeoPoint) config.getValuesSource();
             return new ConvexHullAggregator(name, context, parent, valuesSource, metadata);
         }

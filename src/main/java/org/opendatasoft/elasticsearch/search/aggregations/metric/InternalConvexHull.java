@@ -8,6 +8,9 @@ import org.elasticsearch.legacygeo.builders.PointBuilder;
 import org.elasticsearch.legacygeo.builders.PolygonBuilder;
 import org.elasticsearch.legacygeo.builders.ShapeBuilder;
 import org.elasticsearch.legacygeo.parsers.ShapeParser;
+import org.elasticsearch.search.DocValueFormat;
+import org.elasticsearch.search.aggregations.AggregationReduceContext;
+import org.elasticsearch.search.aggregations.AggregatorReducer;
 import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
 import org.elasticsearch.xcontent.XContentBuilder;
@@ -15,7 +18,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -24,10 +26,8 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
 
     final Geometry convexHull;
 
-    public InternalConvexHull(
-            String name, Geometry convexHull,
-            Map<String, Object> metaData) {
-        super(name, metaData);
+    public InternalConvexHull(String name, Geometry convexHull, DocValueFormat format, Map<String, Object> metaData) {
+        super(name, format, metaData);
         this.convexHull = convexHull;
     }
 
@@ -52,15 +52,16 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         public static GeoJsonGeoShapeType forName(String geoshapename) {
             String typename = geoshapename.toLowerCase(Locale.ROOT);
             for (GeoJsonGeoShapeType type : values()) {
-                if(type.shapename.equals(typename)) {
+                if (type.shapename.equals(typename)) {
                     return type;
                 }
             }
-            throw new IllegalArgumentException("unknown geo_shape ["+geoshapename+"]");
+            throw new IllegalArgumentException("unknown geo_shape [" + geoshapename + "]");
         }
     }
 
     public static class GeoJsonPointBuilder extends PointBuilder {
+
         public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.POINT;
 
         private Coordinate coordinate;
@@ -81,6 +82,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     }
 
     public static class GeoJsonLineStringBuilder extends LineStringBuilder {
+
         public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.LINESTRING;
 
         public GeoJsonLineStringBuilder(CoordinatesBuilder coordinates) {
@@ -96,10 +98,10 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
             builder.endObject();
             return builder;
         }
-
     }
 
     public static class GeoJsonPolygonBuilder extends PolygonBuilder {
+
         public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.POLYGON;
 
         public GeoJsonPolygonBuilder(CoordinatesBuilder coordinates) {
@@ -116,10 +118,10 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
             builder.endObject();
             return builder;
         }
-
     }
 
-    public static class GeoJsonShapeBuilder{
+    public static class GeoJsonShapeBuilder {
+
         public static GeoJsonPointBuilder newPoint(Coordinate coordinate) {
             return new GeoJsonPointBuilder(coordinate);
         }
@@ -129,7 +131,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         }
 
         public static GeoJsonPolygonBuilder newPolygon(Coordinate[] coordinates) {
-                return new GeoJsonPolygonBuilder(new CoordinatesBuilder().coordinates(coordinates));
+            return new GeoJsonPolygonBuilder(new CoordinatesBuilder().coordinates(coordinates));
         }
     }
 
@@ -161,7 +163,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     protected void doWriteTo(StreamOutput out) throws IOException {
         if (convexHull != null) {
             out.writeInt(convexHull.getCoordinates().length);
-            for (Coordinate coord: convexHull.getCoordinates()) {
+            for (Coordinate coord : convexHull.getCoordinates()) {
                 out.writeDouble(coord.x);
                 out.writeDouble(coord.y);
             }
@@ -171,20 +173,30 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
     }
 
     @Override
-    public InternalAggregation reduce(List<InternalAggregation> aggregations, ReduceContext reduceContext) {
-        Geometry merged = null;
+    protected AggregatorReducer getLeaderReducer(AggregationReduceContext reduceContext, int size) {
+        return new AggregatorReducer() {
+            Geometry merged = null;
 
-        for (InternalAggregation aggregation: aggregations) {
-            InternalConvexHull internalGeoPolygon = (InternalConvexHull) aggregation;
-            if (merged == null) {
-                merged = internalGeoPolygon.convexHull;
-            } else if (internalGeoPolygon.convexHull == null) {
-                continue;
-            } else {
-                merged = merged.union(internalGeoPolygon.convexHull).convexHull();
+            @Override
+            public void accept(InternalAggregation aggregation) {
+                InternalConvexHull internalGeoPolygon = (InternalConvexHull) aggregation;
+
+                if (internalGeoPolygon.convexHull == null) {
+                    return;
+                }
+
+                if (merged == null) {
+                    merged = internalGeoPolygon.convexHull;
+                } else {
+                    merged = merged.union(internalGeoPolygon.convexHull).convexHull();
+                }
             }
-        }
-        return new InternalConvexHull(name, merged, metadata);
+
+            @Override
+            public InternalAggregation get() {
+                return new InternalConvexHull(name, merged, null, metadata);
+            }
+        };
     }
 
     @Override

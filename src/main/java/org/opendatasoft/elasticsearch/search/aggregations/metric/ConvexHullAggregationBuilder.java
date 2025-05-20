@@ -1,5 +1,7 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
+import org.elasticsearch.TransportVersion;
+import org.elasticsearch.TransportVersions;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -19,17 +21,17 @@ import org.elasticsearch.xcontent.XContentParser;
 import java.io.IOException;
 import java.util.Map;
 
-
 public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder<ConvexHullAggregationBuilder> {
-
     public static final String NAME = "envelope";
 
     public static final ValuesSourceRegistry.RegistryKey<ConvexHullAggregationSupplier> REGISTRY_KEY =
-            new ValuesSourceRegistry.RegistryKey<>(NAME, ConvexHullAggregationSupplier.class);
+        new ValuesSourceRegistry.RegistryKey<>(NAME, ConvexHullAggregationSupplier.class);
 
-    private static final ObjectParser<ConvexHullAggregationBuilder, Void> PARSER;
+    public static final ObjectParser<ConvexHullAggregationBuilder, String> PARSER = ObjectParser.fromBuilder(
+        NAME,
+        ConvexHullAggregationBuilder::new
+    );
     static {
-        PARSER = new ObjectParser<>(ConvexHullAggregationBuilder.NAME);
         ValuesSourceAggregationBuilder.declareFields(PARSER, false, false, false);
     }
 
@@ -41,10 +43,17 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
         super(name);
     }
 
-
     protected ConvexHullAggregationBuilder(
-            ConvexHullAggregationBuilder clone, AggregatorFactories.Builder factoriesBuilder , Map<String, Object> metaData) {
+        ConvexHullAggregationBuilder clone,
+        AggregatorFactories.Builder factoriesBuilder,
+        Map<String, Object> metaData
+    ) {
         super(clone, factoriesBuilder, metaData);
+    }
+
+    @Override
+    public TransportVersion getMinimalSupportedVersion() {
+        return TransportVersions.MINIMUM_COMPATIBLE;
     }
 
     @Override
@@ -72,21 +81,17 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     @Override
-    protected ValuesSourceRegistry.RegistryKey<?> getRegistryKey() {
-        return REGISTRY_KEY;
-    }
-
-    @Override
     protected ValuesSourceType defaultValueSourceType() {
         return CoreValuesSourceType.GEOPOINT;
     }
 
     @Override
     protected ValuesSourceAggregatorFactory innerBuild(
-            AggregationContext context,
-            ValuesSourceConfig config,
-            AggregatorFactory parent,
-            AggregatorFactories.Builder subFactoriesBuilder) throws IOException {
+        AggregationContext context,
+        ValuesSourceConfig config,
+        AggregatorFactory parent,
+        AggregatorFactories.Builder subFactoriesBuilder
+    ) throws IOException {
         return new ConvexHullAggregator.Factory(name, config, context, parent, subFactoriesBuilder, metadata);
     }
 
@@ -106,10 +111,6 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
     }
 
     public static void registerAggregators(ValuesSourceRegistry.Builder builder) {
-        builder.register(
-                ConvexHullAggregationBuilder.REGISTRY_KEY,
-                CoreValuesSourceType.GEOPOINT,
-                ConvexHullAggregator::new,
-                true);
+        builder.register(ConvexHullAggregationBuilder.REGISTRY_KEY, CoreValuesSourceType.GEOPOINT, ConvexHullAggregator::new, true);
     }
 }
