@@ -1,8 +1,3 @@
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 buildscript {
     repositories {
         mavenLocal()
@@ -14,6 +9,26 @@ buildscript {
     }
 }
 
+// the spotless plugin is dedicated to format the code
+plugins {
+  id("com.diffplug.spotless") version "7.0.3"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+// add -Xlint:deprecation to check the Elasticsearch deprecation warning at compile-time
+allprojects {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:deprecation"
+        }
+    }
+}
+
+
 group = 'org.elasticsearch.plugin'
 version = "${plugin_version}"
 
@@ -22,14 +37,23 @@ apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
 apply plugin: 'elasticsearch.yaml-rest-test'
 
-// license of this project
-//licenseFile = rootProject.file('LICENSE')
-//noticeFile = rootProject.file('README.md')
+
+// automatic formatting configuration (the same configuration as elasticsearch)
+spotless {
+    java {
+        importOrderFile('config/elastic.importorder') // import order file as exported from elastic
+        eclipse().configFile('config/formatterConfig.xml')
+        trimTrailingWhitespace()
+        target 'src/**/*.java'
+    }
+}
+
+check.dependsOn spotlessCheck
 
 esplugin {
-    name 'envelope-aggregation'
-    description 'Returns envelope of geo points'
-    classname 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
+    name = 'envelope-aggregation'
+    description = 'Returns envelope of geo points'
+    classname = 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
     licenseFile = rootProject.file('LICENSE')
     noticeFile = rootProject.file('README.md')
 }
@@ -42,9 +66,13 @@ dependencies {
     // However this archive is not included in the final plugin bundle, since
     // legacy geo and its dependencies (JTS) are already present at runtime
     // with ES (see the jar/manifest rule below)
-    compileOnly files('libs/legacy-geo-7.17.28.jar')
+    compileOnly files('libs/legacy-geo-8.18.1.jar')
+
+    implementation group: 'org.locationtech.jts', name: 'jts-core', version: '1.19.0'
+    implementation group: 'org.locationtech.spatial4j', name: 'spatial4j', version: '0.8'
 
     yamlRestTestImplementation "org.elasticsearch.test:framework:${es_version}"
+    yamlRestTestImplementation "org.elasticsearch.test:yaml-rest-runner:${es_version}"
     yamlRestTestImplementation "org.apache.logging.log4j:log4j-core:2.17.1"
 }
 
@@ -54,7 +82,7 @@ dependencies {
 jar {
     manifest {
         attributes(
-                "Class-Path": "../../modules/legacy-geo/legacy-geo-7.17.28.jar ../../modules/legacy-geo/jts-core-1.15.0.jar ../../modules/legacy-geo/spatial4j-0.7.jar")
+                "Class-Path": "../../modules/legacy-geo/legacy-geo-8.18.1.jar ../../modules/legacy-geo/jts-core-1.15.0.jar ../../modules/legacy-geo/spatial4j-0.7.jar")
 
     }
 }
@@ -66,3 +94,5 @@ testClusters.configureEach {
     // disable security to disable failing warnings
     setting 'xpack.security.enabled', 'false'
 }
+
+test.dependsOn yamlRestTest

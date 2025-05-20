@@ -116,12 +116,18 @@ To install it, launch this command in Elasticsearch directory replacing the url 
 
 Build the plugin using gradle:
 ``` shell
-./gradlew build
+# to format the code then build
+./gradlew spotlessApply build
 ```
 
 or
 ``` shell
 ./gradlew assemble  # (to avoid the test suite)
+```
+
+To run tests thanks to the Yaml Rest Test framework:
+```sh
+./gradlew yamlRestTest
 ```
 
 Then the following command will start a dockerized ES and will install the previously built plugin:
