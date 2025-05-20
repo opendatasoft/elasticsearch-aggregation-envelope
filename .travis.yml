@@ -1,5 +1,6 @@
+dist: focal
 language: java
-jdk: oraclejdk10
+jdk: openjdk-21
 apt:
   update: false
 install: ./gradlew assemble
