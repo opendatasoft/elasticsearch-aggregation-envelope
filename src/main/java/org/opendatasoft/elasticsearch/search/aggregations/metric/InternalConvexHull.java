@@ -1,13 +1,11 @@
 package org.opendatasoft.elasticsearch.search.aggregations.metric;
 
+import org.elasticsearch.common.geo.GeoJson;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.legacygeo.builders.CoordinatesBuilder;
-import org.elasticsearch.legacygeo.builders.LineStringBuilder;
-import org.elasticsearch.legacygeo.builders.PointBuilder;
-import org.elasticsearch.legacygeo.builders.PolygonBuilder;
-import org.elasticsearch.legacygeo.builders.ShapeBuilder;
-import org.elasticsearch.legacygeo.parsers.ShapeParser;
+import org.elasticsearch.geometry.Line;
+import org.elasticsearch.geometry.LinearRing;
+import org.elasticsearch.geometry.Polygon;
 import org.elasticsearch.search.DocValueFormat;
 import org.elasticsearch.search.aggregations.AggregationReduceContext;
 import org.elasticsearch.search.aggregations.AggregatorReducer;
@@ -16,6 +14,7 @@ import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggre
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -60,78 +59,35 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
         }
     }
 
-    public static class GeoJsonPointBuilder extends PointBuilder {
-
-        public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.POINT;
-
-        private Coordinate coordinate;
-
-        public GeoJsonPointBuilder(Coordinate coordinate) {
-            super();
-            this.coordinate = coordinate;
+    /**
+     * Utility class for converting libs/geo shapes thanks to coordinates array from some jts geom type.
+     */
+    public static class JtsGeometryConverter {
+        private static org.elasticsearch.geometry.Geometry convertPoint(Coordinate[] coords) {
+            return new org.elasticsearch.geometry.Point(coords[0].x, coords[0].y);
         }
 
-        @Override
-        public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
-            builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
-            toXContent(builder, coordinate);
-            return builder.endObject();
-        }
-    }
-
-    public static class GeoJsonLineStringBuilder extends LineStringBuilder {
-
-        public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.LINESTRING;
-
-        public GeoJsonLineStringBuilder(CoordinatesBuilder coordinates) {
-            super(coordinates);
+        private static org.elasticsearch.geometry.Geometry convertLineString(Coordinate[] coordinates) {
+            int size = coordinates.length;
+            double[] x = new double[size];
+            double[] y = new double[size];
+            for (int i = 0; i < size; i++) {
+                x[i] = coordinates[i].getX();
+                y[i] = coordinates[i].getY();
+            }
+            return new Line(x, y);
         }
 
-        @Override
-        public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
-            builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.field(ShapeParser.FIELD_COORDINATES.getPreferredName());
-            coordinatesToXcontent(builder, false);
-            builder.endObject();
-            return builder;
-        }
-    }
-
-    public static class GeoJsonPolygonBuilder extends PolygonBuilder {
-
-        public static final GeoJsonGeoShapeType TYPE = GeoJsonGeoShapeType.POLYGON;
-
-        public GeoJsonPolygonBuilder(CoordinatesBuilder coordinates) {
-            super(coordinates);
-        }
-
-        @Override
-        public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
-            builder.startObject();
-            builder.field(ShapeParser.FIELD_TYPE.getPreferredName(), TYPE.shapename);
-            builder.startArray(ShapeParser.FIELD_COORDINATES.getPreferredName());
-            coordinatesArray(builder, params);
-            builder.endArray();
-            builder.endObject();
-            return builder;
-        }
-    }
-
-    public static class GeoJsonShapeBuilder {
-
-        public static GeoJsonPointBuilder newPoint(Coordinate coordinate) {
-            return new GeoJsonPointBuilder(coordinate);
-        }
-
-        public static GeoJsonLineStringBuilder newLineString(Coordinate[] coordinates) {
-            return new GeoJsonLineStringBuilder(new CoordinatesBuilder().coordinates(coordinates));
-        }
-
-        public static GeoJsonPolygonBuilder newPolygon(Coordinate[] coordinates) {
-            return new GeoJsonPolygonBuilder(new CoordinatesBuilder().coordinates(coordinates));
+        private static org.elasticsearch.geometry.Geometry convertPolygon(Coordinate[] coordinates) {
+            int size = coordinates.length;
+            double[] x = new double[size];
+            double[] y = new double[size];
+            for (int i = 0; i < size; i++) {
+                x[i] = coordinates[i].getX();
+                y[i] = coordinates[i].getY();
+            }
+            LinearRing ring = new LinearRing(x, y);
+            return new Polygon(ring);
         }
     }
 
@@ -147,13 +103,14 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
 
     public InternalConvexHull(StreamInput in) throws IOException {
         super(in);
+        GeometryFactory fact = new GeometryFactory();
         int coordsSize = in.readInt();
         if (coordsSize > 0) {
             Coordinate[] coords = new Coordinate[coordsSize];
             for (int i = 0; i < coordsSize; i++) {
                 coords[i] = new Coordinate(in.readDouble(), in.readDouble());
             }
-            this.convexHull = new org.locationtech.jts.algorithm.ConvexHull(coords, ShapeBuilder.FACTORY).getConvexHull();
+            this.convexHull = new org.locationtech.jts.algorithm.ConvexHull(coords, fact).getConvexHull();
         } else {
             this.convexHull = null;
         }
@@ -201,15 +158,17 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
 
     @Override
     public XContentBuilder doXContentBody(XContentBuilder builder, Params params) throws IOException {
-        Geometry convexGeom = getShape();
+        org.locationtech.jts.geom.Geometry convexGeom = getShape();
         if (convexGeom != null) {
             builder.field(CONVEX_HULL);
             if (convexGeom.getGeometryType().equals("Point")) {
-                GeoJsonShapeBuilder.newPoint(convexGeom.getCoordinate()).toXContent(builder, params);
+                GeoJson.toXContent(JtsGeometryConverter.convertPoint(convexGeom.getCoordinates()), builder, params);
             } else if (convexGeom.getGeometryType().equals("LineString")) {
-                GeoJsonShapeBuilder.newLineString(convexGeom.getCoordinates()).toXContent(builder, params);
+                GeoJson.toXContent(JtsGeometryConverter.convertLineString(convexGeom.getCoordinates()), builder, params);
             } else if (convexGeom.getGeometryType().equals("Polygon")) {
-                GeoJsonShapeBuilder.newPolygon(convexGeom.getCoordinates()).toXContent(builder, params);
+                GeoJson.toXContent(JtsGeometryConverter.convertPolygon((convexGeom.getCoordinates())), builder, params);
+            } else {
+                throw new IllegalArgumentException("unknown geo_shape [" + convexGeom.getGeometryType() + "]");
             }
         }
         return builder;

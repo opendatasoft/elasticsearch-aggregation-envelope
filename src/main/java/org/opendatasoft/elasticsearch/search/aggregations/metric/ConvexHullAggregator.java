@@ -5,7 +5,6 @@ import org.elasticsearch.common.util.BigArrays;
 import org.elasticsearch.common.util.ObjectArray;
 import org.elasticsearch.core.Releasables;
 import org.elasticsearch.index.fielddata.MultiGeoPointValues;
-import org.elasticsearch.legacygeo.builders.ShapeBuilder;
 import org.elasticsearch.search.aggregations.AggregationExecutionContext;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.AggregatorFactories;
@@ -22,6 +21,7 @@ import org.elasticsearch.search.aggregations.support.ValuesSourceConfig;
 import org.locationtech.jts.algorithm.ConvexHull;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -89,7 +89,8 @@ public class ConvexHullAggregator extends MetricsAggregator {
             return buildEmptyAggregation();
         }
 
-        Geometry convexHull = new ConvexHull(points.toArray(new Coordinate[points.size()]), ShapeBuilder.FACTORY).getConvexHull();
+        GeometryFactory fact = new GeometryFactory();
+        Geometry convexHull = new ConvexHull(points.toArray(new Coordinate[points.size()]), fact).getConvexHull();
 
         return new InternalConvexHull(name, convexHull, null, metadata());
     }
