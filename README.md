@@ -145,4 +145,4 @@ change before running `docker-compose` up again.
 License
 -------
 
-This software is under The MIT License (MIT)
+This software is under AGPL (GNU Affero General Public License)
