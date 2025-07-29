@@ -10,15 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: gradle:8-jdk21
-      # options: --user gradle
 
     steps:
       - uses: actions/checkout@v4
-        # with:
-        #   persist-credentials: false
 
       - name: Java Compilation
         run: sh ./gradlew clean assemble
 
-      # - name: Run Tests
-      #   run: sh ./gradlew clean check
+      - name: Run Tests
+        run: sh ./gradlew clean check
