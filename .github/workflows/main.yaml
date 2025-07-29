@@ -17,5 +17,9 @@ jobs:
       - name: Java Compilation
         run: sh ./gradlew clean assemble
 
+      # note that elastic should be run with a non-root user
       - name: Run Tests
-        run: sh ./gradlew clean check
+        run: |
+          sudo adduser --disabled-password --gecos "" elastest
+          sudo -u elastest
+          sh ./gradlew clean check
