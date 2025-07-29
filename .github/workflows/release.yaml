@@ -1,0 +1,26 @@
+name: build-and-publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  # check the compilation and run tests
+  build-artifact:
+    runs-on: ubuntu-latest
+    container:
+      image: gradle:8-jdk21
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java Compilation
+        run: ./gradlew clean assemble
+
+
+      # Upload the zip build plugin as artifact
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elasticsearch-plugin
+          path: build/distributions/*.zip

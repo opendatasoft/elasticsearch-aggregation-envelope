@@ -1,0 +1,23 @@
+ARG JDK_VERSION=21
+
+FROM gradle:8-jdk${JDK_VERSION} AS test-runner
+
+RUN apt-get update && apt-get install -y dumb-init procps && rm -rf /var/lib/apt/lists/*
+
+# Créer un utilisateur non-root pour Elasticsearch
+RUN useradd -m -u 1001 -s /bin/bash testuser && \
+    usermod -aG sudo testuser
+
+# Copier les sources
+COPY --chown=testuser:testuser . /workspace
+WORKDIR /workspace
+
+# Changer vers l'utilisateur non-root
+USER testuser
+
+# Configuration pour les tests Elasticsearch
+ENV ES_JAVA_OPTS="-Xms1g -Xmx1g -Djava.io.tmpdir=/tmp"
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["./gradlew", "spotlessCheck", "check", "--no-daemon"]
