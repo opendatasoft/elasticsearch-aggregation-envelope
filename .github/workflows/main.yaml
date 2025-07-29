@@ -14,12 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set a non-root user for the workspace
+        run: |
+          adduser --disabled-password --gecos "" usertest
+          chown -R usertest:usertest $GITHUB_WORKSPACE
+
       - name: Java Compilation
-        run: sh ./gradlew clean assemble
+        run: su -s /bin/bash usertest -c './gradlew clean assemble'
 
       # note that elastic should be run with a non-root user
       - name: Run Tests
-        run: |
-          adduser --disabled-password --gecos "" elastest
-          chown -R elastest:elastest $GITHUB_WORKSPACE
-          su -s /bin/bash elastest -c './gradlew check'
+        run: su -s /bin/bash usertest -c './gradlew check'
