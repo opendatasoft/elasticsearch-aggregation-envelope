@@ -5,7 +5,8 @@ on:
   pull_request:
 
 jobs:
-  build:
+  # check the compilation and run tests
+  check:
     runs-on: ubuntu-latest
     container:
       image: gradle:8-jdk21
@@ -13,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Java Compilation
         run: sh ./gradlew clean assemble
