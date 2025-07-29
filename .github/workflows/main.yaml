@@ -20,6 +20,6 @@ jobs:
       # note that elastic should be run with a non-root user
       - name: Run Tests
         run: |
-          sudo adduser --disabled-password --gecos "" elastest
-          sudo -u elastest
-          sh ./gradlew clean check
+          adduser --disabled-password --gecos "" elastest
+          chown -R elastest:elastest $GITHUB_WORKSPACE
+          su -s /bin/bash elastest -c './gradlew check'
