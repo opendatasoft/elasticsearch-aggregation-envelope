@@ -1,7 +1,0 @@
-dist: focal
-language: java
-jdk: openjdk-21
-apt:
-  update: false
-install: ./gradlew assemble
-script: ./gradlew check
