@@ -1,6 +1,9 @@
+/*
+Gradle build file for development building, testing, and packaging.
+*/
+
 buildscript {
     repositories {
-        mavenLocal()
         mavenCentral()
     }
 
@@ -11,23 +14,13 @@ buildscript {
 
 // the spotless plugin is dedicated to format the code
 plugins {
-  id("com.diffplug.spotless") version "7.0.3"
+  id("com.diffplug.spotless") version "7.0.4"
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
-
-// add -Xlint:deprecation to check the Elasticsearch deprecation warning at compile-time
-allprojects {
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:deprecation"
-        }
-    }
-}
-
 
 group = 'org.elasticsearch.plugin'
 version = "${plugin_version}"
@@ -37,6 +30,36 @@ apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
 apply plugin: 'elasticsearch.yaml-rest-test'
 
+esplugin {
+    name = 'envelope-aggregation'
+    description = 'Returns envelope of geo points'
+    classname = 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
+    licenseFile = rootProject.file('LICENSE')
+    noticeFile = rootProject.file('README.md')
+}
+
+def versions = org.elasticsearch.gradle.VersionProperties.versions
+dependencies {
+    implementation "org.elasticsearch:elasticsearch:${es_version}"
+
+    implementation group: 'org.locationtech.jts', name: 'jts-core', version: '1.19.0'
+    implementation group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.19.0'
+    implementation group: 'org.locationtech.spatial4j', name: 'spatial4j', version: '0.8'
+
+    yamlRestTestImplementation "org.elasticsearch.test:framework:${es_version}"
+    yamlRestTestImplementation "org.elasticsearch.test:yaml-rest-runner:${es_version}"
+    yamlRestTestImplementation "org.apache.logging.log4j:log4j-core:${versions.log4j}"
+}
+
+// add -Xlint:deprecation to check the Elasticsearch deprecation warning at compile-time
+allprojects {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:deprecation"
+            options.compilerArgs << "-Xlint:unchecked"
+        }
+    }
+}
 
 // automatic formatting configuration (the same configuration as elasticsearch)
 spotless {
@@ -50,32 +73,16 @@ spotless {
 
 check.dependsOn spotlessCheck
 
-esplugin {
-    name = 'envelope-aggregation'
-    description = 'Returns envelope of geo points'
-    classname = 'org.opendatasoft.elasticsearch.plugin.EnvelopeAggregation'
-    licenseFile = rootProject.file('LICENSE')
-    noticeFile = rootProject.file('README.md')
-}
-
-dependencies {
-    implementation "org.elasticsearch:elasticsearch:${es_version}"
-
-    implementation group: 'org.locationtech.jts', name: 'jts-core', version: '1.19.0'
-    implementation group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.19.0'
-    implementation group: 'org.locationtech.spatial4j', name: 'spatial4j', version: '0.8'
-
-    yamlRestTestImplementation "org.elasticsearch.test:framework:${es_version}"
-    yamlRestTestImplementation "org.elasticsearch.test:yaml-rest-runner:${es_version}"
-    yamlRestTestImplementation "org.apache.logging.log4j:log4j-core:2.17.1"
-}
-
-// Make sure the ES distribution used for rest tests is the "complete" variant
-// Otherwise weirds errors occur (like the geo_shape type is not handled)
 testClusters.configureEach {
+    // Make sure the ES distribution used for rest tests is the "complete" variant
     testDistribution = 'DEFAULT'
-    // disable security to disable failing warnings
-    setting 'xpack.security.enabled', 'false'
-}
 
-test.dependsOn yamlRestTest
+    // Disable security (avoids annoying warnings/failures with xpack features)
+    setting 'xpack.security.enabled', 'false'
+
+    // Logging levels for debugging: logs are located in build/testclusters/runTask-0/logs/
+    setting 'logger._root', 'DEBUG'
+    setting 'logger.org.elasticsearch.plugins', 'DEBUG'
+    setting 'logger.org.elasticsearch.cluster', 'DEBUG'
+    setting 'logger.org.elasticsearch.cluster.metadata', 'TRACE'
+}
