@@ -1,6 +1,0 @@
-language: java
-jdk: oraclejdk10
-apt:
-  update: false
-install: ./gradlew assemble
-script: ./gradlew check
