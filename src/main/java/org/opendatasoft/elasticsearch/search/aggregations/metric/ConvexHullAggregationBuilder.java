@@ -53,7 +53,7 @@ public class ConvexHullAggregationBuilder extends ValuesSourceAggregationBuilder
 
     @Override
     public TransportVersion getMinimalSupportedVersion() {
-        return TransportVersions.MINIMUM_COMPATIBLE;
+        return TransportVersion.zero();
     }
 
     @Override
