@@ -118,6 +118,7 @@ public class InternalConvexHull extends InternalNumericMetricsAggregation.MultiV
 
     @Override
     protected void doWriteTo(StreamOutput out) throws IOException {
+        out.writeNamedWriteable(format);
         if (convexHull != null) {
             out.writeInt(convexHull.getCoordinates().length);
             for (Coordinate coord : convexHull.getCoordinates()) {

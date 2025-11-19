@@ -22,7 +22,7 @@ setup:
 
   - do:
       indices.refresh:
-        index: [test_index]
+        index: test_index
 
   - do:
       search:
@@ -105,7 +105,7 @@ setup:
             - 45
   - do:
       indices.refresh:
-        index: [test_index]
+        index: test_index
 
   - do:
       search:
@@ -120,7 +120,6 @@ setup:
   - match: { hits.total: 3 }
   - match: { aggregations.envelope.convex_hull.type: Polygon }
   - match: { aggregations.envelope.convex_hull.coordinates: [[[45.0, 45.0], [49.99999995343387, 49.99999999534339], [49.99999995343387, 45.0], [45.0, 45.0]]]}
-
 
 ---
 "Test aggregation on three points plus an inner point":
@@ -158,7 +157,7 @@ setup:
             - 46
   - do:
       indices.refresh:
-        index: [test_index]
+        index: test_index
 
   - do:
       search:
@@ -173,3 +172,52 @@ setup:
   - match: { hits.total: 4 }
   - match: { aggregations.envelope.convex_hull.type: Polygon }
   - match: { aggregations.envelope.convex_hull.coordinates: [[[45.0, 45.0], [49.99999995343387, 49.99999999534339], [49.99999995343387, 45.0], [45.0, 45.0]]]}
+
+---
+"Test internal shards serializers / deserializer by running the same query twice, hence calling the request cache":
+  - do:
+      create:
+        index: test_index
+        id: 1
+        body:
+          point:
+            - 45
+            - 45
+
+  - do:
+      indices.refresh:
+        index: test_index
+
+  - do:
+      indices.put_settings:
+        index: test_index
+        body:
+          index:
+            requests.cache.enable: true
+
+  - do:
+      search:
+        rest_total_hits_as_int: true
+        index: test_index
+        body:
+          size: 0
+          aggs:
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 1 }
+
+  # Second strictly identical search is hitting the cache
+  - do:
+      search:
+        rest_total_hits_as_int: true
+        index: test_index
+        body:
+          size: 0
+          aggs:
+            envelope:
+              envelope:
+                field: point
+
+  - match: { hits.total: 1 }
